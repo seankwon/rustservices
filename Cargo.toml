@@ -4,14 +4,14 @@ version = "0.1.0"
 authors = ["Sean Kwon <seankwn@live.com>"]
 edition = "2018"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
 actix-web = "2.0"
 actix-rt = "1.0"
 actix-server = "1.0.3"
-serde = "1.0.111"
+serde = { version = "1.0.111", features = ["derive"]}
 serde_json = "1.0"
 futures = "0.3.5"
 diesel = { version = "1.4.4", features = ["postgres"] }
 dotenv = "0.15.0"
+jsonwebtoken = "7"
+failure = "0.1.8"

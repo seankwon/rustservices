@@ -1,5 +1,5 @@
 use actix_web::{Error, Responder, HttpRequest, HttpResponse};
-use serde::Serialize;
+use serde::{Serialize};
 use futures::future::{ready, Ready};
 use serde_json;
 
@@ -14,6 +14,7 @@ impl Responder for MyJSON {
 
     fn respond_to(self, _req: &HttpRequest) -> Self::Future {
         let body = serde_json::to_string(&self).unwrap();
+        println!("well i ran");
 
         // Create response and set content type
         ready(Ok(HttpResponse::Ok()
