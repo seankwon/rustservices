@@ -21,15 +21,18 @@ struct LoginResponse {
 }
 
 /*
- * [] - validate user and password
+ * [x] - validate user and password
  * [] - get user from db
  * [] - create session token within state
- * [] - create and return token
+ * [x] - create and return token
 */
 
-pub async fn login(json: web::Json<Login>) -> HttpResponse {
+pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse> {
+    if json.username == "seankwon" {
+        return Err(HttpResponse::Unauthorized().body("Unauthorized"));
+    }
     let token = create_token(&json.username).unwrap();
-    HttpResponse::Ok().json(LoginResponse { token: token })
+    Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
 }
 
 fn create_token(username: &String) -> Result<String, Error> {
