@@ -1,3 +1,7 @@
+// use crate::db;
+use diesel::prelude::*;
+use crate::schema::users;
+use chrono::{Local, NaiveDateTime}; // This type is used for date field in Diesel.
 use jsonwebtoken::errors::{ErrorKind, Error};
 use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
@@ -13,6 +17,16 @@ struct Claims {
 pub struct Login {
     username: String,
     password: String,
+}
+
+#[derive(Debug, Queryable, Insertable, Serialize, Deserialize)]
+#[table_name = "users"]
+pub struct User {
+    username: String,
+    email: String,
+    #[serde(skip)]
+    password: String,
+    created_at: NaiveDateTime,
 }
 
 #[derive(Serialize)]
@@ -33,6 +47,22 @@ pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse>
     }
     let token = create_token(&json.username).unwrap();
     Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
+}
+
+pub fn create_user(conn: &SqliteConnection, username: &String, email: &String, password: &String) -> usize {
+    // optimize this with borrowed vals
+    let new_user = User { 
+        username: username.clone(),
+        email: email.clone(),
+        password: password.clone(),
+        created_at: Local::now().naive_local(),
+    };
+
+    //TODO: Error handling
+    diesel::insert_into(users::table)
+        .values(&new_user)
+        .execute(conn)
+        .expect("Error saving new user")
 }
 
 fn create_token(username: &String) -> Result<String, Error> {

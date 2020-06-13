@@ -5,7 +5,7 @@ use serde_json;
 
 #[derive(Serialize)]
 struct MyJSON {
-    name: &'static str,
+    name: String,
 }
 
 impl Responder for MyJSON {
@@ -24,5 +24,5 @@ impl Responder for MyJSON {
 }
 
 pub async fn index() -> impl Responder {
-    MyJSON { name: "sean kwon" }
+    MyJSON { name: String::from("sean kwon") }
 }
