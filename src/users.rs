@@ -1,6 +1,7 @@
 // use crate::db;
 use diesel::prelude::*;
 use crate::schema::users;
+use crate::db;
 use bcrypt::{DEFAULT_COST, hash};
 use chrono::{Local, NaiveDateTime}; // This type is used for date field in Diesel.
 use jsonwebtoken::errors::{ErrorKind, Error};
@@ -57,6 +58,15 @@ pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse>
     }
     let token = create_token(&json.username).unwrap();
     Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
+}
+
+pub async fn create(json: web::Json<NewUser>) -> HttpResponse {
+    // TODO: needs specific validation
+    let conn = db::establish_connection();
+    match create_user(&conn, &json) {
+        Ok(_) => HttpResponse::Ok().body("Ok!"),
+        Err(_) => HttpResponse::InternalServerError().body("did not work")
+    }
 }
 
 pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
