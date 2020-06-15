@@ -12,8 +12,8 @@ async fn main() -> std::io::Result<()> {
     println!("Server running on port 8088");
     HttpServer::new(|| {
         App::new()
-            .route("/login", web::post().to(users::login))
-            .route("/users", web::post().to(users::create))
+            .route("/login", web::post().to(users::routes::login))
+            .route("/users", web::post().to(users::routes::create))
     })
     .bind("127.0.0.1:8088")?
     .run()
