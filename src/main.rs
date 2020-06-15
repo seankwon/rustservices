@@ -10,11 +10,15 @@ use actix_web::{web, App, HttpServer};
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
     println!("Server running on port 8088");
+    /*
     let conn = db::establish_connection();
-    let username = String::from("bubu");
-    let password = String::from("fdawsho");
-    let email = String::from("fdsaf@sean.com");
-    users::create_user(&conn, &username, &password, &email);
+    let user = users::NewUser {
+        email: String::from("seankwon@foo.com"),
+        password: String::from("fdsaf"),
+        username: String::from("subaru"),
+    };
+    users::create_user(&conn, &user);
+    */
     HttpServer::new(|| {
         App::new()
             .route("/login", web::post().to(users::login))

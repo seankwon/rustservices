@@ -30,6 +30,15 @@ pub struct User {
     created_at: NaiveDateTime,
 }
 
+#[derive(Debug, Insertable, Serialize, Deserialize)]
+#[table_name = "users"]
+pub struct NewUser {
+    pub username: String,
+    pub email: String,
+    #[serde(skip)]
+    pub password: String,
+}
+
 #[derive(Serialize)]
 struct LoginResponse {
     token: String,
@@ -50,12 +59,12 @@ pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse>
     Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
 }
 
-pub fn create_user(conn: &SqliteConnection, username: &String, email: &String, password: &String) -> Result<usize, diesel::result::Error> {
+pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
     // optimize this with borrowed vals
     let new_user = User { 
-        username: username.clone(),
-        email: email.clone(),
-        password: hash(password.clone(), DEFAULT_COST).unwrap().clone(),
+        username: user.username.clone(),
+        email: user.email.clone(),
+        password: hash(user.password.clone(), DEFAULT_COST).unwrap().clone(),
         created_at: Local::now().naive_local(),
     };
 
