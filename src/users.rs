@@ -1,6 +1,7 @@
 // use crate::db;
 use diesel::prelude::*;
 use crate::schema::users;
+use bcrypt::{DEFAULT_COST, hash};
 use chrono::{Local, NaiveDateTime}; // This type is used for date field in Diesel.
 use jsonwebtoken::errors::{ErrorKind, Error};
 use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, Validation};
@@ -49,20 +50,18 @@ pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse>
     Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
 }
 
-pub fn create_user(conn: &SqliteConnection, username: &String, email: &String, password: &String) -> usize {
+pub fn create_user(conn: &SqliteConnection, username: &String, email: &String, password: &String) -> Result<usize, diesel::result::Error> {
     // optimize this with borrowed vals
     let new_user = User { 
         username: username.clone(),
         email: email.clone(),
-        password: password.clone(),
+        password: hash(password.clone(), DEFAULT_COST).unwrap().clone(),
         created_at: Local::now().naive_local(),
     };
 
-    //TODO: Error handling
     diesel::insert_into(users::table)
         .values(&new_user)
         .execute(conn)
-        .expect("Error saving new user")
 }
 
 fn create_token(username: &String) -> Result<String, Error> {
