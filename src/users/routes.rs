@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use actix_web::{Result, web, HttpResponse};
 use crate::db;
 use crate::users::model;
+use diesel::prelude::*;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Login {
@@ -14,19 +15,20 @@ struct LoginResponse {
     token: String,
 }
 
-/*
- * [x] - validate user and password
- * [x] - get user from db
- * [] - create session token within state
- * [x] - create and return token
-*/
-
 pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse> {
-    if json.username == "seankwon" {
-        return Err(HttpResponse::Unauthorized().body("Unauthorized"));
-    }
+    /*
+     * [] - create sessions token
+     */
+
+    use crate::schema::users::dsl::*;
+    let conn = db::establish_connection();
+    let query: model::User = users
+        .filter(username.eq(&json.username))
+        .first(&conn)
+        .expect("unexpected");
     let token = model::create_token(&json.username).unwrap();
-    Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
+    // Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
+    Ok(HttpResponse::Ok().json(query))
 }
 
 pub async fn create(json: web::Json<model::NewUser>) -> HttpResponse {
@@ -37,4 +39,3 @@ pub async fn create(json: web::Json<model::NewUser>) -> HttpResponse {
         Err(_) => HttpResponse::InternalServerError().body("did not work")
     }
 }
-

@@ -1,6 +1,6 @@
 use crate::schema::users;
 use diesel::prelude::*;
-use jsonwebtoken::errors::{ErrorKind, Error};
+use jsonwebtoken::errors::{Error};
 use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use bcrypt::{DEFAULT_COST, hash};
 use chrono::{Local, NaiveDateTime}; // This type is used for date field in Diesel.
@@ -32,7 +32,6 @@ pub struct NewUser {
 }
 
 pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
-    // optimize this with borrowed vals
     let new_user = User { 
         username: user.username.clone(),
         email: user.email.clone(),
@@ -46,6 +45,7 @@ pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, die
 }
 
 pub fn create_token(username: &String) -> Result<String, Error> {
+    // TODO: store secret token somewhere
     let key = b"SECRET_TOKEN";
     let my_claim = Claims { 
         sub: username.clone(), 
@@ -53,6 +53,10 @@ pub fn create_token(username: &String) -> Result<String, Error> {
     };
     encode(&Header::default(), &my_claim, &EncodingKey::from_secret(key))
 }
+
+/*
+pub fn create_session(conn: &SqliteConnection) -> Result<usize, diesel::result::Error> {
+*/
 
 pub fn validate_token(token: &String, username: &String) -> Result<TokenData<Claims>, Error> {
     let key = b"SECRET_TOKEN";
