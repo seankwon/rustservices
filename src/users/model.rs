@@ -1,5 +1,6 @@
 use crate::schema::{users, sessions};
 use diesel::prelude::*;
+use diesel::pg::PgConnection;
 use jsonwebtoken::errors::{Error};
 use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, Validation};
 use bcrypt::{DEFAULT_COST, hash};
@@ -47,7 +48,7 @@ pub struct Session {
 }
 
 
-pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
+pub fn create_user(conn: &PgConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
     let new_user = User { 
         username: user.username.clone(),
         email: user.email.clone(),
@@ -71,7 +72,7 @@ pub fn create_token(username: &String) -> Result<String, Error> {
     encode(&Header::default(), &my_claim, &EncodingKey::from_secret(key))
 }
 
-pub fn create_session(conn: &SqliteConnection, user: &User) -> Result<Session, diesel::result::Error> {
+pub fn create_session(conn: &PgConnection, user: &User) -> Result<Session, diesel::result::Error> {
     let new_session = Session { 
         username: user.username.clone(),
         id: nanoid::simple(),
@@ -82,7 +83,7 @@ pub fn create_session(conn: &SqliteConnection, user: &User) -> Result<Session, d
 
     diesel::insert_into(sessions::table)
         .values(&new_session)
-        .get_results(conn)
+        .get_result(conn)
 }
 
 pub fn validate_token(token: &String, username: &String) -> Result<TokenData<Claims>, Error> {
