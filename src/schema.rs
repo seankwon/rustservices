@@ -4,6 +4,7 @@ table! {
         username -> Text,
         secret -> Text,
         created_at -> Timestamp,
+        user_id -> Nullable<Text>,
     }
 }
 

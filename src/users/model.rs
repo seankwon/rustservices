@@ -1,4 +1,4 @@
-use crate::schema::users;
+use crate::schema::{users, sessions};
 use diesel::prelude::*;
 use jsonwebtoken::errors::{Error};
 use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, Validation};
@@ -13,7 +13,7 @@ pub struct Claims {
     exp: usize,
 }
 
-#[derive(Debug, Queryable, Insertable, Serialize, Deserialize)]
+#[derive(Debug, PartialEq, Identifiable, Queryable, Insertable, Serialize, Deserialize)]
 #[table_name = "users"]
 pub struct User {
     username: String,
@@ -33,6 +33,19 @@ pub struct NewUser {
     #[serde(skip)]
     pub password: String,
 }
+
+#[derive(Debug, PartialEq, Queryable, Insertable, Serialize, Deserialize, Associations)]
+#[belongs_to(User)]
+#[table_name = "sessions"]
+pub struct Session {
+    #[serde(skip)]
+    id: String,
+    username: String,
+    secret: String,
+    created_at: NaiveDateTime,
+    user_id: Option<String>,
+}
+
 
 pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, diesel::result::Error> {
     let new_user = User { 
@@ -58,9 +71,19 @@ pub fn create_token(username: &String) -> Result<String, Error> {
     encode(&Header::default(), &my_claim, &EncodingKey::from_secret(key))
 }
 
-/*
-pub fn create_session(conn: &SqliteConnection) -> Result<usize, diesel::result::Error> {
-*/
+pub fn create_session(conn: &SqliteConnection, user: &User) -> Result<Session, diesel::result::Error> {
+    let new_session = Session { 
+        username: user.username.clone(),
+        id: nanoid::simple(),
+        user_id: Some(user.id.clone()),
+        created_at: Local::now().naive_local(),
+        secret: nanoid::simple(),
+    };
+
+    diesel::insert_into(sessions::table)
+        .values(&new_session)
+        .get_results(conn)
+}
 
 pub fn validate_token(token: &String, username: &String) -> Result<TokenData<Claims>, Error> {
     let key = b"SECRET_TOKEN";
