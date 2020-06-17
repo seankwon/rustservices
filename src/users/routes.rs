@@ -15,11 +15,10 @@ struct LoginResponse {
     token: String,
 }
 
+/*
+ * [] - create sessions token
+*/
 pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse> {
-    /*
-     * [] - create sessions token
-     */
-
     use crate::schema::users::dsl::*;
     let conn = db::establish_connection();
     let query: model::User = users

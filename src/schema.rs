@@ -8,11 +8,12 @@ table! {
 }
 
 table! {
-    users (email) {
+    users (id) {
         username -> Text,
         email -> Text,
         password -> Text,
         created_at -> Timestamp,
+        id -> Text,
     }
 }
 

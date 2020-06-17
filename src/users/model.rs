@@ -5,6 +5,7 @@ use jsonwebtoken::{TokenData, decode, encode, DecodingKey, EncodingKey, Header, 
 use bcrypt::{DEFAULT_COST, hash};
 use chrono::{Local, NaiveDateTime}; // This type is used for date field in Diesel.
 use serde::{Deserialize, Serialize};
+use nanoid;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Claims {
@@ -18,8 +19,10 @@ pub struct User {
     username: String,
     email: String,
     #[serde(skip)]
-    password: String,
+    id: String,
     created_at: NaiveDateTime,
+    #[serde(skip)]
+    password: String,
 }
 
 #[derive(Debug, Insertable, Serialize, Deserialize)]
@@ -36,6 +39,7 @@ pub fn create_user(conn: &SqliteConnection, user: &NewUser) -> Result<usize, die
         username: user.username.clone(),
         email: user.email.clone(),
         password: hash(user.password.clone(), DEFAULT_COST).unwrap().clone(),
+        id: nanoid::simple(),
         created_at: Local::now().naive_local(),
     };
 
