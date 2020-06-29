@@ -3,6 +3,7 @@ use actix_web::{Result, web, HttpResponse};
 use crate::db;
 use crate::users::model;
 use diesel::prelude::*;
+use bcrypt::{verify};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Login {
@@ -15,9 +16,7 @@ struct LoginResponse {
     token: String,
 }
 
-/*
- * [] - create sessions token
-*/
+// TODO: error handling
 pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse> {
     use crate::schema::users::dsl::*;
     let conn = db::establish_connection();
@@ -25,9 +24,18 @@ pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse>
         .filter(username.eq(&json.username))
         .first(&conn)
         .expect("unexpected");
-    let token = model::create_token(&json.username).unwrap();
-    // Ok(HttpResponse::Ok().json(LoginResponse { token: token }))
-    Ok(HttpResponse::Ok().json(query))
+    let verified = verify(&json.password, &query.password);
+
+    match verified {
+        Ok(_) => {
+            model::create_session(&conn, &query).unwrap();
+            Ok(HttpResponse::Ok().body("ok!"))
+        }
+        Err(e) => {
+            println!("{}", e);
+            Err(HttpResponse::Unauthorized().body("nope!"))
+        }
+    }
 }
 
 pub async fn create(json: web::Json<model::NewUser>) -> HttpResponse {

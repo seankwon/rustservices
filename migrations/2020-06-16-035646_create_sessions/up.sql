@@ -4,5 +4,6 @@ CREATE TABLE sessions (
   username         VARCHAR(256) NOT NULL UNIQUE,
   secret           VARCHAR(100) NOT NULL,
   created_at       TIMESTAMP NOT NULL,
-  user_id          VARCHAR(21)
+  user_id          VARCHAR(21),
+  token            VARCHAR(256) NOT NULL UNIQUE
 )

@@ -1,20 +1,21 @@
 table! {
     sessions (id) {
-        id -> Text,
-        username -> Text,
-        secret -> Text,
+        id -> Varchar,
+        username -> Varchar,
+        secret -> Varchar,
         created_at -> Timestamp,
-        user_id -> Nullable<Text>,
+        user_id -> Nullable<Varchar>,
+        token -> Varchar,
     }
 }
 
 table! {
     users (id) {
-        username -> Text,
-        email -> Text,
-        password -> Text,
+        id -> Varchar,
+        username -> Varchar,
+        email -> Varchar,
+        password -> Varchar,
         created_at -> Timestamp,
-        id -> Text,
     }
 }
 
