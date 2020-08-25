@@ -16,14 +16,13 @@ struct LoginResponse {
     token: String,
 }
 
-// TODO: error handling
 pub async fn login(json: web::Json<Login>) -> Result<HttpResponse, HttpResponse> {
     use crate::schema::users::dsl::*;
     let conn = db::establish_connection();
     let query: model::User = users
         .filter(username.eq(&json.username))
         .first(&conn)
-        .expect("unexpected");
+        .map_err(|_| HttpResponse::NotFound().body("Not Found"))?;
     let verified = verify(&json.password, &query.password);
 
     match verified {
